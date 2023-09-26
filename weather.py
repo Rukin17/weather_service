@@ -1,10 +1,12 @@
 import requests
+from config import config
+
 
 def get_coordinates_by_city(city_name: str) -> dict:
-    get_coordinates_url = 'http://api.openweathermap.org/geo/1.0/direct'
+    get_coordinates_url = config.get_coordinates_url
     params = {
         'q': f'{city_name}, ru',
-        'appid': '3c2984a5815f791e351cc2b3b0c7b978',
+        'appid': config.appid,
         'limit': 1
 
     }
@@ -22,11 +24,11 @@ def get_coordinates_by_city(city_name: str) -> dict:
     
 
 def weather_by_city(coordinates: dict):
-    weather_url = 'https://api.openweathermap.org/data/2.5/weather'
+    weather_url = config.weather_url
     params = {
         'lat': coordinates['lat'],
         'lon': coordinates['lon'],
-        'appid': '3c2984a5815f791e351cc2b3b0c7b978',
+        'appid': config.appid,
         'units': 'metric',
         'lang': 'ru'
         
