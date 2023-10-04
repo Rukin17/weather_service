@@ -1,5 +1,5 @@
 import requests
-from config import config
+from weather.config import config
 
 
 def get_coordinates_by_city(city_name: str) -> dict:
@@ -23,7 +23,7 @@ def get_coordinates_by_city(city_name: str) -> dict:
         raise ValueError('Координаты отсутствуют')
     
 
-def weather_by_city(coordinates: dict):
+def get_weather_by_coordinates(coordinates: dict):
     weather_url = config.weather_url
     params = {
         'lat': coordinates['lat'],

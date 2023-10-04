@@ -14,7 +14,7 @@ class Config:
 
 def load():
     return Config(
-        appid=os.getenv('APPID'),
+        appid=os.environ['APPID'],
         weather_url=os.getenv('WEATHER_URL'),
         get_coordinates_url=os.getenv('GET_COORDINATES_URL')
     )
