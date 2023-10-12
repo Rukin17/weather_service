@@ -1,38 +1,65 @@
-import requests
-from weather.config import config
+import httpx
+from dataclasses import dataclass
+from pydantic import BaseModel, ValidationError
 
 
-def get_coordinates_by_city(city_name: str) -> dict:
-    get_coordinates_url = config.get_coordinates_url
-    params = {
-        'q': f'{city_name}, ru',
-        'appid': config.appid,
-        'limit': 1
+class OpenWeatherError(Exception):
+    def __init__(self, reason: str, status: int) -> None:
+        super().__init__(reason, status)
+        self.reason = reason
+        self.status = status
 
-    }
-    result = requests.get(get_coordinates_url, params=params)
 
-    data_by_city = result.json()
+class Coordinates(BaseModel):
+    lat: float
+    lon: float
 
-    coordinates_by_city = {}
-    if 'lat' in data_by_city[0] and 'lon' in data_by_city[0]:
-        coordinates_by_city['lat'] = data_by_city[0]['lat']
-        coordinates_by_city['lon'] = data_by_city[0]['lon']
-        return coordinates_by_city
-    else:
-        raise ValueError('Координаты отсутствуют')
-    
 
-def get_weather_by_coordinates(coordinates: dict):
-    weather_url = config.weather_url
-    params = {
-        'lat': coordinates['lat'],
-        'lon': coordinates['lon'],
-        'appid': config.appid,
-        'units': 'metric',
-        'lang': 'ru'
-        
-    }
+@dataclass
+class TemperatureByCity:
+    city: str
+    temperature: float
 
-    result = requests.get(weather_url, params=params)
-    return result.json()
+
+class OpenWeatherClient:
+    def __init__(self, url, appid):
+        self.url = url
+        self.appid = appid
+
+    def get_coordinates_by_city(self, city_name: str) -> Coordinates:
+
+        params: dict[str, str | int] = {
+            'q': f'{city_name}, ru',
+            'appid': self.appid,
+            'limit': 1
+
+        }
+        response = httpx.get(f'{self.url}/geo/1.0/direct', params=params)
+        response.raise_for_status()
+        data_by_city = response.json()
+
+        try:
+            coordinates_by_city = Coordinates(
+                lat=data_by_city[0]['lat'], 
+                lon=data_by_city[0]['lon']
+                )
+            return coordinates_by_city
+        except KeyError as err:
+            raise OpenWeatherError(reason='openweather client validation error', status=500) from err   
+        except ValidationError as err:
+            raise OpenWeatherError(reason='openweather client validation error', status=500) from err
+       
+
+    def get_weather_by_coordinates(self, city_name: str, coordinates: Coordinates) -> TemperatureByCity:
+        params = {
+            'lat': coordinates.lat,
+            'lon': coordinates.lon,
+            'appid': self.appid,
+            'units': 'metric',
+            'lang': 'ru'
+        }
+
+        result = httpx.get(f'{self.url}/data/2.5/weather', params=params).json()
+        weather = TemperatureByCity(city=city_name, temperature=round(result['main']['temp'], 1))
+        print(result)
+        return weather

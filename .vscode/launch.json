@@ -8,8 +8,8 @@
             "name": "weather",
             "type": "python",
             "request": "launch",
-            "module": "main",
-            "console": "integratedTerminal",
+            "module": "weather",
+            "console": "internalConsole",
             "justMyCode": true
         }
     ]

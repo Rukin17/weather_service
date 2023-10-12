@@ -8,15 +8,13 @@ load_dotenv()
 @dataclass
 class Config:
     appid: str
-    weather_url: str
-    get_coordinates_url: str
+    open_weather_url: str
 
 
 def load():
     return Config(
         appid=os.environ['APPID'],
-        weather_url=os.getenv('WEATHER_URL'),
-        get_coordinates_url=os.getenv('GET_COORDINATES_URL')
+        open_weather_url=os.environ['OPEN_WEATHER_URL'],
     )
 
 config = load()
